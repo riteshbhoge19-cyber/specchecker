@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPECCHECKER | AI Hardware Recommendations</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #06050a;
+            color: #ffffff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            padding: 30px 15px;
+        }
+
+        .container-custom {
+            max-width: 950px;
+            margin: 0 auto;
+        }
+
+        .header-box {
+            background: #0f0c1b;
+            border: 1px solid #2a214d;
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 30px rgba(79, 38, 137, 0.2);
+        }
+
+        .badge-device {
+            background: rgba(255, 193, 7, 0.15);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.4);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .spec-chip {
+            background: #17122e;
+            border: 1px solid #382c61;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #cbb2f8;
+            display: inline-block;
+            margin-right: 8px;
+            margin-top: 10px;
+        }
+
+        .workload-nav {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .workload-btn {
+            flex: 1;
+            min-width: 180px;
+            background: #120e24;
+            border: 1px solid #281f47;
+            color: #8c83b3;
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .workload-btn:hover {
+            border-color: #ffc107;
+            color: #fff;
+        }
+
+        .workload-btn.active {
+            background: linear-gradient(135deg, #2d2250 0%, #1f1838 100%);
+            border-color: #ffc107;
+            color: #ffc107;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.25);
+        }
+
+        .report-card {
+            background: #0f0c1b;
+            border: 1px solid #2a214d;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 0 40px rgba(79, 38, 137, 0.25);
+        }
+
+        .recommendation-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 12px;
+            padding: 0;
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .recommendation-item {
+            background: #17122e;
+            border: 1px solid #2d2250;
+            border-radius: 12px;
+            padding: 10px 16px;
+            color: #e2dded;
+            font-size: 0.92rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .recommendation-item:hover {
+            transform: translateY(-2px);
+            border-color: #ffc107;
+        }
+
+        .item-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            object-fit: contain;
+            background: #ffffff;
+            padding: 3px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .item-index {
+            color: #ffc107;
+            font-weight: 700;
+            min-width: 25px;
+            flex-shrink: 0;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 1px solid #382c61;
+            color: #8c83b3;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            color: #fff;
+            border-color: #ffc107;
+        }
+
+        .spinner-container {
+            text-align: center;
+            padding: 50px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-custom">
+        <a href="/" class="btn-back mb-4"><i class="bi bi-arrow-left"></i> Check Other Spec</a>
+
+        <!-- SELECTED SPECS SUMMARY -->
+        <div class="header-box">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                <h4 class="fw-bold mb-0" id="selectedCpu">Loading Processor...</h4>
+                <span class="badge-device" id="selectedDevice">SPEC CHECK</span>
+            </div>
+            <div>
+                <span class="spec-chip" id="chipRam"><i class="bi bi-memory text-info me-1"></i> RAM</span>
+                <span class="spec-chip" id="chipStorage"><i class="bi bi-hdd-fill text-danger me-1"></i> Storage</span>
+                <span class="spec-chip" id="chipGpu"><i class="bi bi-gpu-card text-success me-1"></i> GPU</span>
+            </div>
+        </div>
+
+        <h5 class="fw-bold mb-3 text-uppercase" style="letter-spacing: 1px; color: #8c83b3;">
+            <i class="bi bi-sliders me-1"></i> Workload Categories
+        </h5>
+
+        <!-- 4 CATEGORY TABS -->
+        <div class="workload-nav">
+            <button class="workload-btn active" onclick="switchTab('gaming', this)">
+                <i class="bi bi-controller fs-5"></i> Gaming
+            </button>
+            <button class="workload-btn" onclick="switchTab('video_editing', this)">
+                <i class="bi bi-film fs-5"></i> Video Editing
+            </button>
+            <button class="workload-btn" onclick="switchTab('photo_editing', this)">
+                <i class="bi bi-image fs-5"></i> Photo Editing
+            </button>
+            <button class="workload-btn" onclick="switchTab('office_work', this)">
+                <i class="bi bi-briefcase fs-5"></i> Office & Study
+            </button>
+        </div>
+
+        <!-- REPORT CARD -->
+        <div class="report-card">
+            <h3 class="fw-bold" id="catTitle" style="color: #ffc107;">Top 20 Gaming Recommendations</h3>
+            <p class="text-secondary mb-0" id="catSubtitle">AI-analyzed dynamic best matches for your specific hardware.</p>
+
+            <hr style="border-color: #2a214d;" class="my-4">
+
+            <div id="loadingState" class="spinner-container">
+                <div class="spinner-border text-warning" role="status" style="width: 3rem; height: 3rem;"></div>
+                <p class="mt-3 text-light-50">Gemini AI is analyzing specs & fetching Top 20 best software/games...</p>
+            </div>
+
+            <ul class="recommendation-list" id="recommendationsList" style="display: none;"></ul>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        let aiData = null;
+        let currentTab = 'gaming';
+
+        const cpuModel = urlParams.get('specific_cpu') || 'Custom CPU';
+        const brand = urlParams.get('brand') || 'Intel';
+        const ram = urlParams.get('ram_spec') || '8 GB';
+        const storage = urlParams.get('storage_type') || 'SSD';
+        const gpuModel = urlParams.get('gpu_type') || 'Integrated GPU';
+        const deviceType = urlParams.get('device_type') || 'Desktop';
+
+        document.getElementById('selectedCpu').innerText = `${brand.toUpperCase()} ${cpuModel}`;
+        document.getElementById('selectedDevice').innerText = deviceType.toUpperCase();
+        document.getElementById('chipRam').innerHTML = `<i class="bi bi-memory text-info me-1"></i> ${ram}`;
+        document.getElementById('chipStorage').innerHTML = `<i class="bi bi-hdd-fill text-danger me-1"></i> ${storage}`;
+        document.getElementById('chipGpu').innerHTML = `<i class="bi bi-gpu-card text-success me-1"></i> ${gpuModel}`;
+
+        async function fetchAIAnalysis() {
+            try {
+                const formData = new FormData();
+                formData.append('device_type', deviceType);
+                formData.append('brand', brand);
+                formData.append('specific_cpu', cpuModel);
+                formData.append('ram_spec', ram);
+                formData.append('storage_type', storage);
+                formData.append('gpu_type', gpuModel);
+
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    aiData = result.data;
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('recommendationsList').style.display = 'grid';
+                    renderCategory(currentTab);
+                } else {
+                    document.getElementById('loadingState').innerHTML = `<p class="text-danger">Error: ${result.error}</p>`;
+                }
+            } catch (err) {
+                document.getElementById('loadingState').innerHTML = `<p class="text-danger">Failed to connect to API.</p>`;
+            }
+        }
+
+        function switchTab(tabKey, element) {
+            currentTab = tabKey;
+            document.querySelectorAll('.workload-btn').forEach(btn => btn.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            const titles = {
+                gaming: "Top 20 Playable Games",
+                video_editing: "Top 20 Video Editing Tools & Workflows",
+                photo_editing: "Top 20 Photo Editing & Design Apps",
+                office_work: "Top 20 Office & Productivity Tasks"
+            };
+
+            document.getElementById('catTitle').innerText = titles[tabKey];
+            if (aiData) renderCategory(tabKey);
+        }
+
+        function renderCategory(categoryKey) {
+            const listContainer = document.getElementById('recommendationsList');
+            listContainer.innerHTML = '';
+
+            const items = aiData[categoryKey] || [];
+            items.forEach((itemObj, index) => {
+                const li = document.createElement('li');
+                li.className = 'recommendation-item';
+
+                const title = typeof itemObj === 'object' ? itemObj.title : itemObj;
+                let domain = typeof itemObj === 'object' && itemObj.domain ? itemObj.domain : '';
+
+                if (!domain) {
+                    domain = `${title.toLowerCase().replace(/[^a-z0-9]/g, '')}.com`;
+                }
+
+                // High-Res Google Favicon API (128px) with Clearbit Fallback
+                const primaryLogo = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+                const secondaryLogo = `https://logo.clearbit.com/${domain}`;
+
+                li.innerHTML = `
+                    <span class="item-index">#${index + 1}</span>
+                    <img src="${primaryLogo}" 
+                         class="item-logo" 
+                         onerror="this.onerror=null; this.src='${secondaryLogo}';" 
+                         alt="logo">
+                    <span>${title}</span>
+                `;
+                listContainer.appendChild(li);
+            });
+        }
+
+        fetchAIAnalysis();
+    </script>
+</body>
+</html>

@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPECCHECKER | Select Hardware Specs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        body {
+            background-color: #06050a;
+            color: #ffffff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .sidebar {
+            width: 230px;
+            height: 100vh;
+            position: fixed;
+            background: #0b0914;
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 24px 16px;
+        }
+
+        .brand-title {
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 35px;
+            letter-spacing: 1px;
+        }
+
+        .brand-icon {
+            background: #ffc107;
+            color: #000;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 12px rgba(255, 193, 7, 0.6);
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 8px rgba(255, 193, 7, 0.4); transform: scale(1); }
+            100% { box-shadow: 0 0 20px rgba(255, 193, 7, 0.9); transform: scale(1.08); }
+        }
+
+        .sidebar-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #535070;
+            letter-spacing: 1.2px;
+            margin-bottom: 12px;
+            padding-left: 8px;
+        }
+
+        .nav-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #726f8d;
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .nav-menu-item.active {
+            background: #2d2250;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(88, 52, 168, 0.4);
+        }
+
+        .main-content {
+            margin-left: 230px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .badge-pill {
+            background: rgba(138, 43, 226, 0.15);
+            border: 1px solid rgba(138, 43, 226, 0.4);
+            color: #b98bf8;
+            padding: 6px 18px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .hero-title {
+            font-size: 2.8rem;
+            font-weight: 800;
+            margin-top: 18px;
+            margin-bottom: 8px;
+        }
+
+        .hero-subtitle {
+            color: #726f8d;
+            font-size: 0.95rem;
+            margin-bottom: 35px;
+        }
+
+        .spec-card {
+            background: #0f0c1b;
+            border: 1px solid #2a214d;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 0 40px rgba(79, 38, 137, 0.3);
+            width: 100%;
+            max-width: 750px;
+        }
+
+        .form-label-custom {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #726f8d;
+            letter-spacing: 0.8px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .glass-select {
+            background: #141024 !important;
+            border: 1px solid #281f47 !important;
+            color: #ffffff !important;
+            border-radius: 10px;
+            padding: 12px 15px;
+            font-size: 0.9rem;
+            width: 100%;
+            outline: none;
+        }
+
+        .btn-analyze {
+            background: #ffc107;
+            color: #000;
+            font-weight: 800;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            width: 100%;
+            font-size: 0.95rem;
+            margin-top: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-analyze:hover {
+            background: #ffcd39;
+            box-shadow: 0 0 20px rgba(255, 193, 7, 0.4);
+        }
+
+        .dynamic-field {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="brand-title">
+            <span class="brand-icon"><i class="bi bi-lightning-charge-fill"></i></span> SPECCHECKER
+        </div>
+
+        <div class="sidebar-label">DEVICE TYPE</div>
+        <div class="nav-menu">
+            <a href="#" class="nav-menu-item active" id="tabPC" onclick="switchDevice('desktop', this, event)">
+                <i class="bi bi-display"></i> PC
+            </a>
+            <a href="#" class="nav-menu-item" id="tabLaptop" onclick="switchDevice('laptop', this, event)">
+                <i class="bi bi-laptop"></i> Laptop
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="text-center">
+            <span class="badge-pill">AI Hardware Checker</span>
+            <h1 class="hero-title">Revolutionize Your Spec Experience</h1>
+            <p class="hero-subtitle">Empower your setup with real-time hardware performance analysis.</p>
+        </div>
+
+        <div class="spec-card">
+            <h4 class="mb-4 fw-bold text-center">System Specification</h4>
+            
+            <form id="specForm">
+                <input type="hidden" name="device_type" id="deviceInput" value="desktop">
+
+                <!-- PROCESSOR BRAND -->
+                <div class="mb-3">
+                    <label class="form-label-custom">PROCESSOR BRAND</label>
+                    <select class="form-select glass-select" name="brand" id="brandSelect" onchange="onBrandSelect()">
+                        <option value="" disabled selected>-- Select Brand --</option>
+                        <option value="intel">Intel</option>
+                        <option value="amd">AMD</option>
+                    </select>
+                </div>
+
+                <!-- ERA -->
+                <div class="mb-3 dynamic-field" id="eraGroup">
+                    <label class="form-label-custom">PROCESSOR ERA / GENERATION</label>
+                    <select class="form-select glass-select" name="cpu_era" id="eraSelect" onchange="updateProcessorModels()">
+                        <option value="" disabled selected>-- Select Era --</option>
+                        <option value="2006-2010">Legacy Era (Core 2 Duo / Quad / 1st Gen)</option>
+                        <option value="2011-2016">3rd - 6th Gen Era (Ivy Bridge / Haswell / Skylake)</option>
+                        <option value="2017-2020">7th - 10th Gen Era (Kaby Lake / Comet Lake)</option>
+                        <option value="2021-2026">11th - 14th Gen & Modern Era (Alder / Raptor Lake)</option>
+                    </select>
+                </div>
+
+                <!-- EXACT CPU -->
+                <div class="mb-3 dynamic-field" id="cpuGroup">
+                    <label class="form-label-custom">SELECT EXACT PROCESSOR MODEL</label>
+                    <select class="form-select glass-select" name="specific_cpu" id="cpuModelSelect">
+                    </select>
+                </div>
+
+                <!-- RAM -->
+                <div class="mb-3">
+                    <label class="form-label-custom">SYSTEM RAM</label>
+                    <select class="form-select glass-select" name="ram_spec">
+                        <option value="DDR2 - 2 GB">DDR2 - 2 GB</option>
+                        <option value="DDR2 - 4 GB">DDR2 - 4 GB</option>
+                        <option value="DDR3 - 4 GB">DDR3 - 4 GB</option>
+                        <option value="DDR3 - 8 GB" selected>DDR3 - 8 GB</option>
+                        <option value="DDR3 - 12 GB">DDR3 - 12 GB</option>
+                        <option value="DDR3 - 16 GB">DDR3 - 16 GB</option>
+                        <option value="DDR4 - 8 GB">DDR4 - 8 GB</option>
+                        <option value="DDR4 - 12 GB">DDR4 - 12 GB</option>
+                        <option value="DDR4 - 16 GB">DDR4 - 16 GB</option>
+                        <option value="DDR4 - 32 GB">DDR4 - 32 GB</option>
+                        <option value="DDR4 - 64 GB">DDR4 - 64 GB</option>
+                        <option value="DDR5 - 16 GB">DDR5 - 16 GB</option>
+                        <option value="DDR5 - 32 GB">DDR5 - 32 GB</option>
+                        <option value="DDR5 - 64 GB">DDR5 - 64 GB</option>
+                    </select>
+                </div>
+
+                <!-- STORAGE -->
+                <div class="mb-3">
+                    <label class="form-label-custom">PRIMARY STORAGE TYPE</label>
+                    <select class="form-select glass-select" name="storage_type">
+                        <option value="Mechanical HDD (Solid State Hybrid Drive / 5400/7200 RPM)">Mechanical HDD Only</option>
+                        <option value="SATA SSD (Solid State Drive)" selected>SATA SSD (Solid State Drive)</option>
+                        <option value="NVMe M.2 High-Speed PCIe SSD">NVMe M.2 High-Speed SSD</option>
+                    </select>
+                </div>
+
+                <!-- GPU CATEGORY -->
+                <div class="mb-3">
+                    <label class="form-label-custom">GRAPHICS CARD CATEGORY</label>
+                    <select class="form-select glass-select" name="gpu_category" id="gpuCategorySelect" onchange="updateGpuModels()">
+                        <option value="none" selected>No Dedicated GPU (Integrated Only)</option>
+                        <option value="nvidia_legacy">NVIDIA Legacy / Mobile (GT Series / MX / 800M-900M)</option>
+                        <option value="nvidia_mid">NVIDIA Mid Era / GTX Series (GTX 1050/1060/1650/1660)</option>
+                        <option value="nvidia_rtx">NVIDIA Modern RTX Series (RTX 2060/3050/3060/4050/4060/4070)</option>
+                        <option value="amd_radeon">AMD Radeon Series (RX 500 / RX 6000 / Vega / Mobile)</option>
+                    </select>
+                </div>
+
+                <!-- SPECIFIC GPU -->
+                <div class="mb-3 dynamic-field" id="gpuModelGroup">
+                    <label class="form-label-custom">SELECT EXACT GRAPHICS CARD MODEL</label>
+                    <select class="form-select glass-select" name="gpu_type" id="gpuModelSelect">
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-analyze text-uppercase">
+                    <i class="bi bi-lightning-fill me-1"></i> Analyze Spec Now
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // FULL COMPREHENSIVE PROCESSOR DATASET
+        const desktopProcessors = {
+            intel: {
+                "2006-2010": ["Core 2 Duo E7500", "Core 2 Duo E8400", "Core 2 Quad Q6600", "Core 2 Quad Q9550", "Core i3-530", "Core i5-750", "Core i5-760", "Core i7-870", "Core i7-920", "Core i7-950"],
+                "2011-2016": ["Core i3-2100", "Core i3-3220", "Core i3-4130", "Core i3-6100", "Core i5-2400", "Core i5-3470", "Core i5-3570K", "Core i5-4440", "Core i5-4460", "Core i5-4590", "Core i5-6500", "Core i5-6600K", "Core i7-2600K", "Core i7-3770K", "Core i7-4770K", "Core i7-4790K", "Core i7-6700K"],
+                "2017-2020": ["Core i3-7100", "Core i3-8100", "Core i3-9100F", "Core i3-10100F", "Core i5-7400", "Core i5-8400", "Core i5-9400F", "Core i5-9600K", "Core i5-10400F", "Core i5-10600K", "Core i7-7700K", "Core i7-8700K", "Core i7-9700K", "Core i7-10700K", "Core i9-9900K", "Core i9-10900K"],
+                "2021-2026": ["Core i3-12100F", "Core i3-13100F", "Core i3-14100F", "Core i5-11400F", "Core i5-12400F", "Core i5-12600K", "Core i5-13400F", "Core i5-13600K", "Core i5-14600K", "Core i7-11700K", "Core i7-12700K", "Core i7-13700K", "Core i7-14700K", "Core i9-12900K", "Core i9-13900K", "Core i9-14900K"]
+            },
+            amd: {
+                "2006-2010": ["Athlon 64 X2 5200+", "Athlon II X4 640", "Phenom II X4 955", "Phenom II X4 965", "Phenom II X6 1090T"],
+                "2011-2016": ["FX-4300", "FX-6300", "FX-8320", "FX-8350", "A8-7600 APU", "A10-7850K APU"],
+                "2017-2020": ["Ryzen 3 1200", "Ryzen 3 2200G", "Ryzen 3 3200G", "Ryzen 5 1600", "Ryzen 5 2600", "Ryzen 5 3400G", "Ryzen 5 3600", "Ryzen 5 3600X", "Ryzen 7 1700", "Ryzen 7 2700X", "Ryzen 7 3700X", "Ryzen 9 3900X"],
+                "2021-2026": ["Ryzen 3 4100", "Ryzen 5 5500", "Ryzen 5 5600", "Ryzen 5 5600G", "Ryzen 5 5600X", "Ryzen 5 7600", "Ryzen 5 7600X", "Ryzen 7 5700X", "Ryzen 7 5800X3D", "Ryzen 7 7700X", "Ryzen 7 7800X3D", "Ryzen 9 5900X", "Ryzen 9 7900X", "Ryzen 9 7950X3D", "Ryzen 9 9950X"]
+            }
+        };
+
+        const laptopProcessors = {
+            intel: {
+                "2006-2010": ["Core 2 Duo T6500", "Core 2 Duo P8600", "Core i3-330M", "Core i5-430M", "Core i5-520M", "Core i7-720QM"],
+                "2011-2016": ["Core i3-2310M", "Core i3-3110M", "Core i3-4005U", "Core i3-5005U", "Core i5-2410M", "Core i5-3210M", "Core i5-4200U", "Core i5-5200U", "Core i5-6200U", "Core i7-3610QM", "Core i7-4700HQ", "Core i7-6700HQ"],
+                "2017-2020": ["Core i3-7100U", "Core i3-8130U", "Core i3-1005G1", "Core i5-7200U", "Core i5-8250U", "Core i5-8300H", "Core i5-9300H", "Core i5-10300H", "Core i5-1035G1", "Core i7-7700HQ", "Core i7-8750H", "Core i7-9750H", "Core i7-10750H"],
+                "2021-2026": ["Core i3-1115G4", "Core i3-1215U", "Core i5-1135G7", "Core i5-11400H", "Core i5-1235U", "Core i5-12450H", "Core i5-12500H", "Core i5-13420H", "Core i5-13500H", "Core i7-11800H", "Core i7-12700H", "Core i7-13700H", "Core i7-13800H", "Core i9-12900H", "Core i9-13900HX"]
+            },
+            amd: {
+                "2006-2010": ["Turion 64 X2 TL-60", "Turion II Ultra M600"],
+                "2011-2016": ["A6-4400M", "A8-4500M", "A10-5750M", "FX-8800P"],
+                "2017-2020": ["Ryzen 3 2200U", "Ryzen 3 3200U", "Ryzen 5 2500U", "Ryzen 5 3500U", "Ryzen 5 3550H", "Ryzen 5 4600H", "Ryzen 7 2700U", "Ryzen 7 3700U", "Ryzen 7 3750H", "Ryzen 7 4800H"],
+                "2021-2026": ["Ryzen 3 5300U", "Ryzen 3 7320U", "Ryzen 5 5500U", "Ryzen 5 5600H", "Ryzen 5 6600H", "Ryzen 5 7520U", "Ryzen 5 7535HS", "Ryzen 7 5700U", "Ryzen 7 5800H", "Ryzen 7 6800H", "Ryzen 7 7735HS", "Ryzen 7 7840HS", "Ryzen 9 5900HX", "Ryzen 9 6900HX", "Ryzen 9 7940HS"]
+            }
+        };
+
+        // FULL COMPREHENSIVE GPU DATASET (INCLUDES LAPTOP MOBILE & VRAM)
+        const desktopGpuList = {
+            "nvidia_legacy": [
+                "GeForce GT 610 (1 GB / 2 GB)", "GeForce GT 710 (1 GB / 2 GB)", "GeForce GT 730 (2 GB / 4 GB)", 
+                "GeForce GT 1030 (2 GB GDDR5)", "GeForce GTX 650 (1 GB / 2 GB)", "GeForce GTX 750 (1 GB / 2 GB)", 
+                "GeForce GTX 750 Ti (2 GB GDDR5)", "GeForce GTX 950 (2 GB)", "GeForce GTX 960 (2 GB / 4 GB)"
+            ],
+            "nvidia_mid": [
+                "GeForce GTX 1050 (2 GB)", "GeForce GTX 1050 Ti (4 GB GDDR5)", "GeForce GTX 1060 (3 GB GDDR5)", 
+                "GeForce GTX 1060 (6 GB GDDR5)", "GeForce GTX 1070 (8 GB)", "GeForce GTX 1650 (4 GB GDDR5/GDDR6)", 
+                "GeForce GTX 1650 Super (4 GB)", "GeForce GTX 1660 (6 GB)", "GeForce GTX 1660 Super (6 GB GDDR6)", 
+                "GeForce GTX 1660 Ti (6 GB)"
+            ],
+            "nvidia_rtx": [
+                "GeForce RTX 2060 (6 GB GDDR6)", "GeForce RTX 2060 Super (8 GB)", "GeForce RTX 2070 Super (8 GB)", 
+                "GeForce RTX 3050 (6 GB / 8 GB)", "GeForce RTX 3060 (12 GB GDDR6)", "GeForce RTX 3060 Ti (8 GB)", 
+                "GeForce RTX 3070 (8 GB GDDR6)", "GeForce RTX 4060 (8 GB GDDR6)", "GeForce RTX 4060 Ti (8 GB / 16 GB)", 
+                "GeForce RTX 4070 (12 GB)", "GeForce RTX 4070 Super (12 GB)", "GeForce RTX 4080 (16 GB)"
+            ],
+            "amd_radeon": [
+                "Radeon R7 240 / R7 250", "Radeon RX 460 (2 GB / 4 GB)", "Radeon RX 550 (2 GB / 4 GB)", 
+                "Radeon RX 570 (4 GB / 8 GB)", "Radeon RX 580 (4 GB / 8 GB GDDR5)", "Radeon RX 590 (8 GB)", 
+                "Radeon RX 6500 XT (4 GB)", "Radeon RX 6600 (8 GB GDDR6)", "Radeon RX 6600 XT (8 GB)", 
+                "Radeon RX 6700 XT (12 GB)", "Radeon RX 7600 (8 GB)", "Radeon RX 7700 XT (12 GB)", "Radeon RX 7800 XT (16 GB)"
+            ]
+        };
+
+        const laptopGpuList = {
+            "nvidia_legacy": [
+                "NVIDIA GeForce 820M / 920M (1 GB / 2 GB)", "NVIDIA GeForce 940MX (2 GB / 4 GB)", 
+                "NVIDIA GeForce MX110 / MX130", "NVIDIA GeForce MX150 (2 GB)", "NVIDIA GeForce MX230 / MX250", 
+                "NVIDIA GeForce MX330 / MX350 (2 GB)", "NVIDIA GeForce MX450 (2 GB GDDR6)", 
+                "NVIDIA GeForce GTX 850M / 860M", "NVIDIA GeForce GTX 950M / 960M (2 GB / 4 GB)", "NVIDIA GeForce GTX 970M (3 GB)"
+            ],
+            "nvidia_mid": [
+                "GeForce GTX 1050 Laptop (3 GB / 4 GB)", "GeForce GTX 1050 Ti Laptop (4 GB)", 
+                "GeForce GTX 1060 Mobile (6 GB GDDR5)", "GeForce GTX 1650 Laptop (4 GB GDDR5)", 
+                "GeForce GTX 1650 GDDR6 Laptop (4 GB)", "GeForce GTX 1650 Ti Mobile (4 GB)", 
+                "GeForce GTX 1660 Ti Mobile (6 GB GDDR6)"
+            ],
+            "nvidia_rtx": [
+                "GeForce RTX 2060 Mobile (6 GB GDDR6)", "GeForce RTX 3050 Laptop (4 GB GDDR6)", 
+                "GeForce RTX 3050 Ti Laptop (4 GB)", "GeForce RTX 3050 Refresh Laptop (6 GB GDDR6)", 
+                "GeForce RTX 3060 Laptop (6 GB GDDR6)", "GeForce RTX 3070 Laptop (8 GB)", 
+                "GeForce RTX 4050 Laptop (6 GB GDDR6)", "GeForce RTX 4060 Laptop (8 GB GDDR6)", 
+                "GeForce RTX 4070 Laptop (8 GB GDDR6)"
+            ],
+            "amd_radeon": [
+                "AMD Radeon R5 M330 / R5 M430", "AMD Radeon Vega 8 / Vega 10 (Integrated Graphics)", 
+                "AMD Radeon 610M / 660M / 680M (Integrated Graphics)", "AMD Radeon 780M (Integrated)", 
+                "AMD Radeon RX 5500M (4 GB)", "AMD Radeon RX 5600M (6 GB)", "AMD Radeon RX 6600M (8 GB GDDR6)", "AMD Radeon RX 7600S (8 GB)"
+            ]
+        };
+
+        function onBrandSelect() {
+            document.getElementById('eraGroup').style.display = 'block';
+            updateProcessorModels();
+        }
+
+        function updateProcessorModels() {
+            const brand = document.getElementById('brandSelect').value;
+            const era = document.getElementById('eraSelect').value;
+            const deviceType = document.getElementById('deviceInput').value;
+            const cpuGroup = document.getElementById('cpuGroup');
+            const cpuModelSelect = document.getElementById('cpuModelSelect');
+
+            if (!brand || !era) return;
+            cpuModelSelect.innerHTML = '';
+            
+            const dataset = (deviceType === 'laptop') ? laptopProcessors : desktopProcessors;
+            const models = dataset[brand]?.[era] || [];
+
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                cpuModelSelect.appendChild(option);
+            });
+
+            cpuGroup.style.display = 'block';
+        }
+
+        function updateGpuModels() {
+            const category = document.getElementById('gpuCategorySelect').value;
+            const deviceType = document.getElementById('deviceInput').value;
+            const gpuModelGroup = document.getElementById('gpuModelGroup');
+            const gpuModelSelect = document.getElementById('gpuModelSelect');
+
+            if (category === 'none') {
+                gpuModelGroup.style.display = 'none';
+            } else {
+                gpuModelSelect.innerHTML = '';
+                const gpuDataset = (deviceType === 'laptop') ? laptopGpuList : desktopGpuList;
+                const gpus = gpuDataset[category] || [];
+
+                gpus.forEach(gpu => {
+                    const option = document.createElement('option');
+                    option.value = gpu;
+                    option.textContent = gpu;
+                    gpuModelSelect.appendChild(option);
+                });
+
+                gpuModelGroup.style.display = 'block';
+            }
+        }
+
+        function switchDevice(device, element, event) {
+            event.preventDefault();
+            document.querySelectorAll('.nav-menu-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            
+            document.getElementById('deviceInput').value = device;
+            updateProcessorModels();
+            updateGpuModels();
+        }
+
+        document.getElementById('specForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const params = new URLSearchParams(formData);
+
+            // Navigate to result page
+            window.location.href = 'result.html?' + params.toString();
+        });
+    </script>
+</body>
+</html>
