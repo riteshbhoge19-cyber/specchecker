@@ -1,74 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpecChecker | Hardware Analysis</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background: #1e293b;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-        h1 {
-            color: #38bdf8;
-            border-bottom: 2px solid #334155;
-            padding-bottom: 10px;
-        }
-        .loading {
-            color: #facc15;
-            font-size: 1.1rem;
-        }
-        .result-box {
-            background: #0f172a;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-            white-space: pre-wrap;
-            line-height: 1.6;
-            margin-top: 15px;
-        }
-        .back-btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #0284c7;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-        }
-        .back-btn:hover {
-            background-color: #0369a1;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <h1>Hardware Analysis & Recommendations</h1>
-    
-    <div id="status" class="loading">Analyzing your specifications with Gemini AI... Please wait.</div>
-    
-    <div id="result-container" class="result-box" style="display: none;"></div>
-
-    <a href="/" class="back-btn">← Check Another Spec</a>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const statusEl = document.getElementById('status');
@@ -78,11 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const requestData = {
         device_type: urlParams.get('device_type') || 'Desktop',
-        specific_cpu: urlParams.get('specific_cpu') || '',
-        ram_spec: urlParams.get('ram_spec') || '',
-        storage_type: urlParams.get('storage_type') || '',
-        gpu_category: urlParams.get('gpu_category') || '',
-        category: 'Gaming'
+        specific_cpu: urlParams.get('specific_cpu') || urlParams.get('cpu') || 'Intel Core i3',
+        ram_spec: urlParams.get('ram_spec') || urlParams.get('ram') || '8 GB',
+        storage_type: urlParams.get('storage_type') || urlParams.get('storage') || 'SATA SSD',
+        gpu_category: urlParams.get('gpu_category') || urlParams.get('gpu') || 'Integrated GPU',
+        category: urlParams.get('category') || 'Gaming'
     };
 
     fetch('/analyze', {
@@ -92,11 +21,12 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         body: JSON.stringify(requestData)
     })
-    .then(response => {
+    .then(async response => {
+        const data = await response.json();
         if (!response.ok) {
-            throw new Error('Server status: ' + response.status);
+            throw new Error(data.error || 'Server error ' + response.status);
         }
-        return response.json();
+        return data;
     })
     .then(data => {
         statusEl.style.display = 'none';
@@ -113,11 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Fetch error:', error);
         statusEl.style.display = 'none';
         resultBox.style.display = 'block';
-        resultBox.innerText = "Failed to connect to API or request timed out. Please try refreshing.";
+        resultBox.innerText = "Error: " + error.message;
         resultBox.style.color = "#f87171";
     });
 });
 </script>
-
-</body>
-</html>
