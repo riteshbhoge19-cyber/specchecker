@@ -3,14 +3,15 @@ from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 import google.generativeai as genai
 
+# Load environment variables from .env file
 load_dotenv()
 
 app = Flask(__name__)
 
-# API Key Configuration
-api_key = os.getenv("GEMINI_API_KEY")
-if api_key:
-    genai.configure(api_key=api_key)
+# Fetch API Key
+API_KEY = os.getenv("GEMINI_API_KEY")
+if API_KEY:
+    genai.configure(api_key=API_KEY)
 
 @app.route('/')
 def index():
@@ -23,13 +24,14 @@ def result():
 @app.route('/analyze', methods=['POST'])
 @app.route('/api/recommendations', methods=['POST'])
 def get_recommendations():
-    current_key = os.getenv("GEMINI_API_KEY") or api_key
+    # Dynamic Key check for environment changes
+    current_key = os.getenv("GEMINI_API_KEY") or API_KEY
     if not current_key:
         return jsonify({"error": "GEMINI_API_KEY is missing on server."}), 500
-    
+
     genai.configure(api_key=current_key)
 
-    # JSON किंवा Form Data दोन्ही वाचण्यासाठी
+    # Accept both JSON payload and Form Data
     data = request.get_json(force=True, silent=True) or request.form or {}
 
     device_type = data.get('device_type', 'Desktop')
@@ -53,13 +55,12 @@ def get_recommendations():
     """
 
     try:
-        # gemini-1.5-flash वापरून पहा
         model = genai.GenerativeModel('gemini-1.5-flash')
         response = model.generate_content(prompt)
         return jsonify({"recommendations": response.text})
     except Exception as e:
-        print("API Error:", str(e))
+        print("API Failure Trace:", str(e))
         return jsonify({"error": f"AI Error: {str(e)}"}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=50001, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
