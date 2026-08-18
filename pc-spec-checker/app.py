@@ -48,7 +48,7 @@ def get_recommendations():
 
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.5-flash',
             contents=prompt,
         )
         return jsonify({"recommendations": response.text})
@@ -56,4 +56,4 @@ def get_recommendations():
         return jsonify({"error": f"AI Server Error: {str(e)}"}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True)
