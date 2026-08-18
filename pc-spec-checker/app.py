@@ -20,6 +20,8 @@ def index():
 def result():
     return render_template('result.html')
 
+# /analyze आणि /api/recommendations दोन्ही Route हाताळण्यासाठी:
+@app.route('/analyze', methods=['POST'])
 @app.route('/api/recommendations', methods=['POST'])
 def get_recommendations():
     if not client:
@@ -27,10 +29,10 @@ def get_recommendations():
 
     data = request.json or {}
     device_type = data.get('device_type', 'Desktop')
-    cpu = data.get('cpu', 'Unknown CPU')
-    ram = data.get('ram', '8 GB')
-    storage = data.get('storage', 'SSD')
-    gpu = data.get('gpu', 'Integrated GPU')
+    cpu = data.get('specific_cpu') or data.get('cpu', 'Unknown CPU')
+    ram = data.get('ram_spec') or data.get('ram', '8 GB')
+    storage = data.get('storage_type') or data.get('storage', 'SSD')
+    gpu = data.get('gpu_category') or data.get('gpu', 'Integrated GPU')
     category = data.get('category', 'Gaming')
 
     prompt = f"""
@@ -48,7 +50,7 @@ def get_recommendations():
 
     try:
         response = client.models.generate_content(
-            model='gemini-3.5-flash',
+            model='gemini-2.5-flash',
             contents=prompt,
         )
         return jsonify({"recommendations": response.text})
