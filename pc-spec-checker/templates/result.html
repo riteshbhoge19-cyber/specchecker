@@ -1,50 +1,520 @@
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const statusEl = document.getElementById('status');
-    const resultBox = document.getElementById('result-container');
-
-    const urlParams = new URLSearchParams(window.location.search);
-
-    const requestData = {
-        device_type: urlParams.get('device_type') || 'Desktop',
-        specific_cpu: urlParams.get('specific_cpu') || urlParams.get('cpu') || 'Intel Core i3',
-        ram_spec: urlParams.get('ram_spec') || urlParams.get('ram') || '8 GB',
-        storage_type: urlParams.get('storage_type') || urlParams.get('storage') || 'SATA SSD',
-        gpu_category: urlParams.get('gpu_category') || urlParams.get('gpu') || 'Integrated GPU',
-        category: urlParams.get('category') || 'Gaming'
-    };
-
-    fetch('/analyze', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-    })
-    .then(async response => {
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.error || 'Server error ' + response.status);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPECCHECKER | Premium Hardware Analysis</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #06040a;
+            --card-bg: rgba(18, 14, 32, 0.7);
+            --card-border: rgba(120, 80, 255, 0.2);
+            --accent-gold: #ffb703;
+            --accent-purple: #8a2be2;
+            --accent-glow: rgba(138, 43, 226, 0.35);
         }
-        return data;
-    })
-    .then(data => {
-        statusEl.style.display = 'none';
-        resultBox.style.display = 'block';
 
-        if (data.recommendations) {
-            resultBox.innerText = data.recommendations;
-        } else if (data.error) {
-            resultBox.innerText = "Error: " + data.error;
-            resultBox.style.color = "#f87171";
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(138, 43, 226, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 80%, rgba(255, 183, 3, 0.08) 0%, transparent 40%);
+            color: #ffffff;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            margin: 0;
         }
-    })
-    .catch(error => {
-        console.error('Fetch error:', error);
-        statusEl.style.display = 'none';
-        resultBox.style.display = 'block';
-        resultBox.innerText = "Error: " + error.message;
-        resultBox.style.color = "#f87171";
-    });
-});
-</script>
+
+        .top-navbar {
+            background: rgba(11, 9, 20, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 16px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-back-nav {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 20px;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-back-nav:hover {
+            color: var(--accent-gold);
+            border-color: var(--accent-gold);
+            background: rgba(255, 183, 3, 0.1);
+            box-shadow: 0 0 20px rgba(255, 183, 3, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .content-container {
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 35px 20px;
+        }
+
+        .spec-summary-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .device-badge {
+            position: absolute;
+            top: 28px;
+            right: 28px;
+            background: linear-gradient(135deg, rgba(255, 183, 3, 0.2), rgba(255, 140, 0, 0.1));
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 5px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        .spec-chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 9px 16px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            color: #d1cbe5;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .workload-section {
+            margin-top: 30px;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: #938ba9;
+            letter-spacing: 1.5px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab-btn {
+            background: rgba(18, 14, 32, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #a49cb9;
+            padding: 16px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            width: 100%;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .tab-btn:hover {
+            border-color: rgba(138, 43, 226, 0.6);
+            color: #ffffff;
+            background: rgba(138, 43, 226, 0.12);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, rgba(138, 43, 226, 0.3), rgba(75, 0, 130, 0.3));
+            border-color: #a855f7;
+            color: #ffffff;
+            box-shadow: 0 0 25px rgba(168, 85, 247, 0.35);
+        }
+
+        .result-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 38px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            margin-top: 28px;
+            min-height: 380px;
+        }
+
+        .result-title {
+            background: linear-gradient(135deg, #ffffff 0%, var(--accent-gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.75rem;
+            font-weight: 800;
+        }
+
+        .recommendations-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 18px;
+            margin-top: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .recommendations-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        /* प्रिमियम ग्लॉसी आयटम बॉक्स */
+        .item-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 14px 18px;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex !important;
+            align-items: center !important;
+            gap: 16px !important;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            box-sizing: border-box;
+            backdrop-filter: blur(8px);
+        }
+
+        .item-box:hover {
+            transform: translateY(-3px);
+            background: rgba(138, 43, 226, 0.12);
+            border-color: rgba(168, 85, 247, 0.5);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.25);
+        }
+
+        .item-logo-container {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            padding: 3px;
+        }
+
+        .item-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .item-title {
+            color: #f1edfd;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-grow: 1;
+            letter-spacing: 0.2px;
+        }
+
+        .fallback-avatar {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #a855f7, #6366f1);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .spinner-yellow {
+            color: var(--accent-gold);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-navbar">
+        <a href="/" class="btn-back-nav">
+            <i class="bi bi-arrow-left"></i> Check Other Spec
+        </a>
+    </div>
+
+    <div class="content-container">
+
+        <div class="spec-summary-card">
+            <span id="badge-device" class="device-badge">DESKTOP</span>
+
+            <h2 id="disp-cpu" class="fw-bold text-white mb-3" style="font-size: 1.85rem;">
+                Loading Processor...
+            </h2>
+
+            <div class="d-flex flex-wrap gap-2">
+                <div class="spec-chip">
+                    <i class="bi bi-memory text-info"></i> <span id="disp-ram">--</span>
+                </div>
+                <div class="spec-chip">
+                    <i class="bi bi-hdd-network text-danger"></i> <span id="disp-storage">--</span>
+                </div>
+                <div class="spec-chip">
+                    <i class="bi bi-cpu-fill text-success"></i> <span id="disp-gpu">Integrated GPU</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="workload-section">
+            <div class="section-label">
+                <i class="bi bi-sliders"></i> WORKLOAD CATEGORIES
+            </div>
+            <div class="row g-2">
+                <div class="col-6 col-md-3">
+                    <button onclick="switchCategory('Gaming', this)" id="cat-Gaming" class="tab-btn active">
+                        <i class="bi bi-controller"></i> Gaming
+                    </button>
+                </div>
+                <div class="col-6 col-md-3">
+                    <button onclick="switchCategory('Video Editing', this)" id="cat-Video Editing" class="tab-btn">
+                        <i class="bi bi-film"></i> Video Editing
+                    </button>
+                </div>
+                <div class="col-6 col-md-3">
+                    <button onclick="switchCategory('Photo Editing', this)" id="cat-Photo Editing" class="tab-btn">
+                        <i class="bi bi-image"></i> Photo Editing
+                    </button>
+                </div>
+                <div class="col-6 col-md-3">
+                    <button onclick="switchCategory('Office & Study', this)" id="cat-Office & Study" class="tab-btn">
+                        <i class="bi bi-briefcase"></i> Office & Study
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="result-card">
+            <h3 id="recommendation-title" class="result-title mb-1">
+                Top 20 Gaming Recommendations
+            </h3>
+            <p style="color: #938ba9; font-size: 0.88rem;" class="border-bottom border-secondary border-opacity-25 pb-3 mb-4">
+                AI-analyzed dynamic best matches for your specific hardware setup.
+            </p>
+
+            <div id="loading" class="py-5 text-center">
+                <div class="spinner-border spinner-yellow mb-3" role="status"></div>
+                <div style="color: #938ba9; font-size: 0.95rem;">Analyzing Specs & Matching Software...</div>
+            </div>
+
+            <div id="ai-output" class="recommendations-grid d-none"></div>
+
+            <div id="error-box" class="d-none text-danger text-center py-4">
+                <i class="bi bi-exclamation-triangle-fill fs-3 d-block mb-2"></i>
+                Failed to connect to AI Service.
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+
+        const cpu = params.get('specific_cpu') || params.get('cpu') || 'Custom Processor';
+        const ram = params.get('ram_spec') || params.get('ram') || 'RAM Not Specified';
+        const storage = params.get('storage_type') || params.get('storage') || 'Storage Not Specified';
+        const gpu = params.get('gpu_type') || params.get('gpu_category') || 'Integrated GPU';
+        const device = params.get('device_type') || 'desktop';
+
+        document.getElementById('disp-cpu').innerText = cpu;
+        document.getElementById('disp-ram').innerText = ram;
+        document.getElementById('disp-storage').innerText = storage;
+        document.getElementById('disp-gpu').innerText = gpu;
+        document.getElementById('badge-device').innerText = device.toUpperCase();
+
+        const knownDomains = {
+            // Gaming
+            "cyberpunk": "cyberpunk.net",
+            "alan wake": "alanwake.com",
+            "wukong": "heishenhua.com",
+            "black myth": "heishenhua.com",
+            "flight simulator": "flightsimulator.com",
+            "senua": "hellblade.com",
+            "hellblade": "hellblade.com",
+            "stalker": "stalker2.com",
+            "witcher": "thewitcher.com",
+            "hogwarts": "hogwartslegacy.com",
+            "avatar": "ubisoft.com",
+            "minecraft": "minecraft.net",
+            "terraria": "terraria.org",
+            "stardew": "stardewvalley.net",
+            "portal": "valvesoftware.com",
+            "half-life": "half-life.com",
+            "grand theft auto": "rockstargames.com",
+            "gta": "rockstargames.com",
+            "undertale": "undertale.com",
+            "valorant": "playvalorant.com",
+            "roblox": "roblox.com",
+
+            // Video Editing
+            "capcut": "capcut.com",
+            "shotcut": "shotcut.org",
+            "kdenlive": "kdenlive.org",
+            "openshot": "openshot.org",
+            "filmora": "wondershare.com",
+            "wondershare": "wondershare.com",
+            "powerdirector": "cyberlink.com",
+            "cyberlink": "cyberlink.com",
+            "vsdc": "videosoftdev.com",
+            "movavi": "movavi.com",
+            "corel": "coreldraw.com",
+            "videostudio": "coreldraw.com",
+            "clipchamp": "clipchamp.com",
+            "lightworks": "lwks.com",
+            "hitfilm": "fxhome.com",
+            "avidemux": "avidemux.sourceforge.net",
+            "olive": "olivevideoeditor.org",
+            "losslesscut": "github.com",
+            "vegas": "vegascreativesoftware.com",
+            "pinnacle": "pinnaclesys.com",
+            "davinci": "blackmagicdesign.com",
+            "resolve": "blackmagicdesign.com",
+            "videopad": "nchsoftware.com",
+            "magix": "magix.com",
+            "handbrake": "handbrake.fr",
+
+            // General Adobe & Design
+            "adobe": "adobe.com",
+            "premiere": "adobe.com",
+            "photoshop": "adobe.com",
+            "lightroom": "adobe.com",
+            "after effects": "adobe.com",
+            "blender": "blender.org",
+            "gimp": "gimp.org",
+            "canva": "canva.com",
+            "figma": "figma.com"
+        };
+
+        function getDomainForTitle(cleanTitle) {
+            const lower = cleanTitle.toLowerCase();
+            for (let key in knownDomains) {
+                if (lower.includes(key)) {
+                    return knownDomains[key];
+                }
+            }
+            const cleanSlug = lower.replace(/[^a-z0-9]/g, '');
+            return `${cleanSlug}.com`;
+        }
+
+        function renderBoxes(text) {
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+            const outputContainer = document.getElementById('ai-output');
+            outputContainer.innerHTML = '';
+
+            lines.forEach(line => {
+                let cleanName = line.replace(/^\d+[\.\)]\s*/, '').replace(/\*\*/g, '').trim();
+                if (cleanName) {
+                    const domain = getDomainForTitle(cleanName);
+                    // Primary Icon API: DuckDuckGo
+                    const primaryUrl = `https://icons.duckduckgo.com/ip3/${domain}.ico`;
+                    // Secondary Fallback API: Google Favicons
+                    const secondaryUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+                    
+                    const firstChar = cleanName.charAt(0).toUpperCase();
+
+                    const itemBox = document.createElement('div');
+                    itemBox.className = 'item-box';
+
+                    const logoContainer = document.createElement('div');
+                    logoContainer.className = 'item-logo-container';
+
+                    const img = document.createElement('img');
+                    img.className = 'item-logo';
+                    img.alt = cleanName;
+                    img.src = primaryUrl;
+
+                    // डबल लेयर फॉलबॅक लॉजिक (DuckDuckGo -> Google -> Text Avatar)
+                    img.onerror = function() {
+                        if (this.src !== secondaryUrl) {
+                            this.src = secondaryUrl;
+                        } else {
+                            logoContainer.innerHTML = `<div class="fallback-avatar">${firstChar}</div>`;
+                        }
+                    };
+
+                    logoContainer.appendChild(img);
+
+                    const titleSpan = document.createElement('span');
+                    titleSpan.className = 'item-title';
+                    titleSpan.textContent = cleanName;
+
+                    itemBox.appendChild(logoContainer);
+                    itemBox.appendChild(titleSpan);
+
+                    outputContainer.appendChild(itemBox);
+                }
+            });
+        }
+
+        async function fetchRecommendations(category) {
+            const loading = document.getElementById('loading');
+            const output = document.getElementById('ai-output');
+            errorBox = document.getElementById('error-box');
+            const title = document.getElementById('recommendation-title');
+
+            title.innerText = `Top 20 ${category} Recommendations`;
+            loading.classList.remove('d-none');
+            output.classList.add('d-none');
+            errorBox.classList.add('d-none');
+
+            params.set('category', category);
+
+            try {
+                const res = await fetch(`/api/recommendations?${params.toString()}`);
+                const data = await res.json();
+
+                loading.classList.add('d-none');
+
+                if (res.ok && data.recommendations) {
+                    output.classList.remove('d-none');
+                    renderBoxes(data.recommendations);
+                } else {
+                    errorBox.innerText = data.error || "Failed to fetch recommendations.";
+                    errorBox.classList.remove('d-none');
+                }
+            } catch (e) {
+                loading.classList.add('d-none');
+                errorBox.classList.remove('d-none');
+            }
+        }
+
+        function switchCategory(cat, element) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            fetchRecommendations(cat);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchRecommendations('Gaming');
+        });
+    </script>
+</body>
+</html>
